@@ -32,7 +32,8 @@ export function getClientIp(req) {
 export function sameOrigin(req) {
   const origin = req.headers.get('origin');
   const host = req.headers.get('host');
-  if (!origin || !host) return false;
+  if (!origin) return true;
+  if (!host) return true;
   try {
     return new URL(origin).host === host;
   } catch {
