@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import dns from 'node:dns/promises';
+import { rateLimit, getClientIp, sameOrigin, signToken } from '../../lib/security.js';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +21,13 @@ const DISPOSABLE_DOMAINS = new Set([
 ]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[+\d][\d\s().-]{6,19}$/;
+const MAX_FIELD = 120;
+const MAX_BODY_BYTES = 2048;
+
+function clean(v) {
+  return String(v ?? '').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, MAX_FIELD);
+}
 
 async function hasMxOrA(domain) {
   try {
@@ -34,26 +42,54 @@ async function hasMxOrA(domain) {
 }
 
 export async function POST(req) {
+  if (!sameOrigin(req)) {
+    return NextResponse.json({ status: 'error', message: 'Origine non autorisée.' }, { status: 403 });
+  }
+
+  const ip = getClientIp(req);
+  if (!rateLimit(`submit:${ip}`)) {
+    return NextResponse.json(
+      { status: 'error', message: 'Trop de tentatives. Réessayez dans une minute.' },
+      { status: 429 },
+    );
+  }
+
+  const contentLength = Number(req.headers.get('content-length') || 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ status: 'error', message: 'Requête trop volumineuse.' }, { status: 413 });
+  }
+
   let body;
   try {
-    body = await req.json();
+    const text = await req.text();
+    if (text.length > MAX_BODY_BYTES) {
+      return NextResponse.json({ status: 'error', message: 'Requête trop volumineuse.' }, { status: 413 });
+    }
+    body = JSON.parse(text);
   } catch {
     return NextResponse.json({ status: 'error', message: 'Requête invalide.' }, { status: 400 });
   }
 
-  const nom = String(body.nom || '').trim();
-  const email = String(body.email || '').trim();
-  const telephone = String(body.telephone || '').trim();
-  const domaine = String(body.domaine || '').trim();
+  if (clean(body.website)) {
+    return NextResponse.json({ status: 'ok', token: '' });
+  }
+
+  const nom = clean(body.nom);
+  const email = clean(body.email).toLowerCase();
+  const telephone = clean(body.telephone);
+  const domaine = clean(body.domaine);
 
   if (!nom || !email || !telephone || !domaine) {
     return NextResponse.json({ status: 'error', message: 'Merci de remplir tous les champs.' });
   }
-  if (!EMAIL_RE.test(email)) {
+  if (!EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ status: 'error', message: 'Email invalide.' });
   }
+  if (!PHONE_RE.test(telephone)) {
+    return NextResponse.json({ status: 'error', message: 'Téléphone invalide.' });
+  }
 
-  const domain = email.split('@')[1].toLowerCase();
+  const domain = email.split('@')[1];
 
   if (DISPOSABLE_DOMAINS.has(domain)) {
     return NextResponse.json({ status: 'disposable' });
@@ -69,12 +105,16 @@ export async function POST(req) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     const res = await fetch(GSHEET_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nom, email, telephone, domaine }),
       redirect: 'follow',
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     const json = await res.json().catch(() => ({}));
 
     if (json.status === 'duplicate') {
@@ -87,5 +127,10 @@ export async function POST(req) {
     return NextResponse.json({ status: 'error', message: 'Impossible de joindre le service.' });
   }
 
-  return NextResponse.json({ status: 'ok' });
+  let token = '';
+  try {
+    token = signToken(email);
+  } catch {}
+
+  return NextResponse.json({ status: 'ok', token });
 }

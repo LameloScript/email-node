@@ -4,6 +4,7 @@ import { useState } from 'react';
 export default function Page() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
+  const [token, setToken] = useState('');
   const [disposableError, setDisposableError] = useState('');
   const [duplicateError, setDuplicateError] = useState('');
   const [formError, setFormError] = useState('');
@@ -24,7 +25,10 @@ export default function Page() {
       });
       const json = await res.json();
 
-      if (json.status === 'ok') setSuccess({ nom: data.nom });
+      if (json.status === 'ok') {
+        setSuccess({ nom: data.nom });
+        setToken(json.token || '');
+      }
       else if (json.status === 'disposable') setDisposableError(data.email);
       else if (json.status === 'duplicate') setDuplicateError(data.email);
       else setFormError(json.message || 'Une erreur est survenue.');
@@ -47,7 +51,7 @@ export default function Page() {
             <p className="success">
               Merci <strong>{success.nom}</strong>. Votre guide exclusif vous attend.
             </p>
-            <a href="/api/ebook" className="btn-gold">Télécharger le guide</a>
+            <a href={`/api/ebook?t=${encodeURIComponent(token)}`} className="btn-gold">Télécharger le guide</a>
             <p className="footer-note">Document envoyé également à votre adresse email</p>
           </>
         ) : (
@@ -61,15 +65,23 @@ export default function Page() {
             </p>
             <div className="divider"><span></span></div>
             {formError && <div className="error">{formError}</div>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} autoComplete="on">
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, opacity: 0 }}
+                aria-hidden="true"
+              />
               <label>Nom & Prénom</label>
-              <input name="nom" required placeholder="Votre identité" />
+              <input name="nom" required maxLength={120} placeholder="Votre identité" />
               <label>Adresse email</label>
-              <input type="email" name="email" required placeholder="vous@domaine.com" />
+              <input type="email" name="email" required maxLength={254} placeholder="vous@domaine.com" />
               <label>Téléphone</label>
-              <input name="telephone" required placeholder="+33 ..." />
+              <input name="telephone" required maxLength={20} placeholder="+33 ..." />
               <label>Secteur d'activité</label>
-              <input name="domaine" required placeholder="Votre domaine professionnel" />
+              <input name="domaine" required maxLength={120} placeholder="Votre domaine professionnel" />
               <button type="submit" disabled={loading}>
                 {loading ? 'Envoi en cours…' : 'Recevoir le guide'}
               </button>
