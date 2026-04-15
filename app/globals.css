@@ -28,19 +28,19 @@ body::before{
 }
 .card{
   position:relative;
-  background:linear-gradient(145deg,#141414 0%,#0d0d0d 100%);
-  border:1px solid rgba(201,169,97,.25);
+  background:#ffffff;
+  border:1px solid rgba(201,169,97,.6);
   border-radius:4px;
   padding:56px 48px;
   max-width:520px;width:100%;
   box-shadow:
     0 40px 100px rgba(0,0,0,.8),
-    0 0 60px rgba(201,169,97,.08),
-    inset 0 1px 0 rgba(201,169,97,.15);
+    0 0 60px rgba(201,169,97,.15),
+    inset 0 1px 0 rgba(201,169,97,.25);
 }
 .card::before{
   content:'';position:absolute;inset:8px;
-  border:1px solid rgba(201,169,97,.15);
+  border:1px solid rgba(201,169,97,.35);
   border-radius:2px;pointer-events:none;
 }
 .ornament{text-align:center;color:var(--gold);font-size:20px;letter-spacing:8px;margin-bottom:16px}
@@ -52,12 +52,12 @@ body::before{
 h1{
   font-family:'Playfair Display',serif;
   font-weight:500;font-size:36px;line-height:1.2;
-  text-align:center;color:var(--cream);
+  text-align:center;color:#0a0a0a;
   margin-bottom:14px;
 }
-h1 em{color:var(--gold);font-style:italic}
+h1 em{color:var(--gold-dark);font-style:italic}
 .lead{
-  text-align:center;color:var(--muted);
+  text-align:center;color:#555;
   font-size:14px;line-height:1.7;
   margin-bottom:36px;
   font-weight:300;
@@ -71,18 +71,18 @@ h1 em{color:var(--gold);font-style:italic}
 label{
   display:block;margin:18px 0 8px;
   font-size:11px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--gold);font-weight:500;
+  color:var(--gold-dark);font-weight:500;
 }
 input{
   width:100%;padding:14px 0;
   background:transparent;
-  border:none;border-bottom:1px solid rgba(201,169,97,.3);
-  color:var(--cream);font-size:15px;
+  border:none;border-bottom:1px solid rgba(201,169,97,.5);
+  color:#0a0a0a;font-size:15px;
   font-family:'Inter',sans-serif;
   transition:border-color .3s;
 }
-input:focus{outline:none;border-bottom-color:var(--gold)}
-input::placeholder{color:#555}
+input:focus{outline:none;border-bottom-color:var(--gold-dark)}
+input::placeholder{color:#aaa}
 button,.btn-gold{
   display:block;width:100%;
   margin-top:32px;padding:18px;
@@ -109,7 +109,7 @@ button::after,.btn-gold::after{
 button:hover::after,.btn-gold:hover::after{left:100%}
 .footer-note{
   text-align:center;margin-top:28px;
-  font-size:11px;color:var(--muted);
+  font-size:11px;color:#888;
   letter-spacing:1px;
 }
 .error{
@@ -117,11 +117,11 @@ button:hover::after,.btn-gold:hover::after{left:100%}
   font-size:13px;letter-spacing:1px;
 }
 .success{
-  color:var(--gold);text-align:center;
+  color:var(--gold-dark);text-align:center;
   font-size:15px;line-height:1.7;
   margin-bottom:8px;
 }
-.success strong{color:var(--cream);font-weight:500}
+.success strong{color:#0a0a0a;font-weight:500}
 .dialog-backdrop{
   position:fixed;inset:0;
   background:rgba(0,0,0,.85);backdrop-filter:blur(4px);

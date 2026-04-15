@@ -57,13 +57,12 @@ export default function Page() {
         ) : (
           <>
             <div className="ornament">◆ ◆ ◆</div>
-            <div className="eyebrow">Édition Limitée</div>
+            <div className="eyebrow">Édition Exclusive</div>
             <h1>Le guide des <em>événements d'exception</em></h1>
             <p className="lead">
               Découvrez les secrets d'une organisation événementielle de prestige.
               Un guide confidentiel réservé aux organisateurs exigeants.
             </p>
-            <div className="divider"><span></span></div>
             {formError && <div className="error">{formError}</div>}
             <form onSubmit={handleSubmit} autoComplete="on">
               <input
@@ -79,7 +78,7 @@ export default function Page() {
               <label>Adresse email</label>
               <input type="email" name="email" required maxLength={254} placeholder="vous@domaine.com" />
               <label>Téléphone</label>
-              <input name="telephone" required maxLength={20} placeholder="+33 ..." />
+              <input name="telephone" required maxLength={20} placeholder="+225 ..." />
               <label>Secteur d'activité</label>
               <input name="domaine" required maxLength={120} placeholder="Votre domaine professionnel" />
               <button type="submit" disabled={loading}>
